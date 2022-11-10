@@ -59,7 +59,7 @@ if ($IncludeDuplicates -ne $true)
         | ForEach-Object { $_.Group | Select-Object -First 1 }
 }
 
-$items = $items
+$items = $items `
     | ForEach-Object {
         $out = $_
         $sinceDate = $out.location_dates | Select-Object -First 1
@@ -68,22 +68,25 @@ $items = $items
         (0..$days) `
             | ForEach-Object {
                 $date = $sinceDate.AddDays($_)
-                $intervals = [Math]::DivRem($out.location_times.Count, 2).Item1
-                (0..($intervals-1)) `
-                | ForEach-Object {
-                    @{
-                        Id     = $out.location_id
-                        Type   = $out.location_interruption;
-                        Since  = $date.Add(($out.location_times | Select-Object -Skip ($_ * 2)     -First 1));
-                        Until  = $date.Add(($out.location_times | Select-Object -Skip ($_ * 2 + 1) -First 1));
-                        Period = $out.location_period;
-                        Text   = $out.location_text;
+                $rem = 0
+                $intervals = [Math]::DivRem($out.location_times.Count, 2, [ref]$rem).Item1
+                if ($intervals -gt 0) {
+                    (0..($intervals-1)) `
+                    | ForEach-Object {
+                        @{
+                            Id     = $out.location_id;
+                            Type   = $out.location_interruption;
+                            Since  = $date.Add(($out.location_times | Select-Object -Skip ($_ * 2)     -First 1));
+                            Until  = $date.Add(($out.location_times | Select-Object -Skip ($_ * 2 + 1) -First 1));
+                            Period = $out.location_period;
+                            Text   = $out.location_text;
+                        }
                     }
                 }
             }
     } `
     | Where-Object { $IncludeOld -eq $true -or $_.Until -gt $now } `
-    | Sort-Object -Property Since, Until `
+    | Sort-Object -Property Since, Until                           `
     | Select-Object -Property Id, Type, Since, Until, Period, Text
 
 $items

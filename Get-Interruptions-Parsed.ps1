@@ -35,15 +35,15 @@ foreach ($loc in $locations)
     $loc.location_text   = & "$PSScriptRoot/Trim-Whitespaces.ps1" $loc.location_text
     $loc | Add-Member -MemberType NoteProperty -Name 'location_dates' -Value ($loc.location_period)
     $loc | Add-Member -MemberType NoteProperty -Name 'location_times' -Value ($loc.location_period)
-    $loc.location_dates = $loc.location_period `
+    $loc.location_dates = $loc.location_period                       `
         | Select-String -Pattern '\d{1,2}.\d{1,2}.\d{4}' -AllMatches `
-        | ForEach-Object { $_.Matches }
-        | Select-Object -ExpandProperty Value
-        | ForEach-Object { [DateTime]::Parse($_, $culture) }
-    $loc.location_times = $loc.location_period `
-        | Select-String -Pattern '\d{1,2}:\d{2}' -AllMatches `
-        | ForEach-Object { $_.Matches }
-        | Select-Object -ExpandProperty Value
-        | ForEach-Object { [TimeSpan]::Parse($_, $culture) }
+        | ForEach-Object { $_.Matches }                              `
+        | Select-Object -ExpandProperty Value                        `
+        | ForEach-Object { [DateTime]::Parse($_, $culture) }         
+    $loc.location_times = $loc.location_period                       `
+        | Select-String -Pattern '\d{1,2}:\d{2}' -AllMatches         `
+        | ForEach-Object { $_.Matches }                              `
+        | Select-Object -ExpandProperty Value                        `
+        | ForEach-Object { [TimeSpan]::Parse($_, $culture) }         
 }
 $locations
